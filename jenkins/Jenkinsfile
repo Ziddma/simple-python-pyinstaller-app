@@ -29,6 +29,8 @@ node {
             
             // Jalankan PyInstaller
             sh 'pyinstaller --onefile /app/add2vals.py'
+
+            sh 'tail -f /dev/null'
         }
 
         // Archive hasil build jika berhasil

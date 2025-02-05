@@ -5,7 +5,7 @@ node {
 
     stage('Build') {
         sh 'docker run --rm -v $(pwd):/workspace -w /workspace python:2-alpine python -m py_compile sources/add2vals.py sources/calc.py'
-    }
+
 
     stage('Test') {
         sh 'docker run --rm -v $(pwd):/workspace -w /workspace qnib/pytest py.test --verbose --junit-xml test-reports/results.xml sources/test_calc.py'

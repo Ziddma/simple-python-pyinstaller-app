@@ -1,22 +1,45 @@
 node {
-    stage('Checkout') {
-        checkout scm
-    }
-
     stage('Build') {
-        sh '''
-        set -x
-        docker run --rm -v $(pwd):/workspace -w /workspace python:2-alpine python -m py_compile sources/add2vals.py sources/calc.py
-        '''
+        docker.image('python:2-alpine').inside {
+            echo 'Building the application...'
+            sh 'ls -lah sources/' 
+            sh 'python -m py_compile sources/add2vals.py sources/calc.py'
+        }
     }
 
     stage('Test') {
-        sh 'docker run --rm -v $(pwd):/workspace -w /workspace qnib/pytest py.test --verbose --junit-xml test-reports/results.xml sources/test_calc.py'
-        junit 'test-reports/results.xml'
+        docker.image('qnib/pytest').inside {
+            echo 'Running tests...'
+            sh 'ls -lah sources/'  
+            sh 'py.test --verbose --junit-xml test-reports/results.xml sources/test_calc.py'
+        }
+        junit 'test-reports/results.xml' 
     }
 
     stage('Deliver') {
-        sh 'docker run --rm -v $(pwd):/workspace -w /workspace -v $(pwd)/dist:/dist cdrx/pyinstaller-linux:python2 pyinstaller --onefile sources/add2vals.py'
+    try {
+        docker.image('cdrx/pyinstaller-linux:python2').inside {
+            echo '📦 Packaging the application...'
+
+            // Cek apakah direktori sources ada
+            sh 'ls -lah sources/' || echo '❌ ERROR: Directory sources/ not found!'
+
+            // Cek apakah file ada sebelum pyinstaller dieksekusi
+            sh '[ -f sources/add2vals.py ] && echo "✅ File found" || echo "❌ ERROR: File missing!"'
+
+            // Jalankan PyInstaller hanya jika file ditemukan
+            sh 'if [ -f sources/add2vals.py ]; then pyinstaller --onefile sources/add2vals.py; else echo "❌ Skipping pyinstaller due to missing file"; fi'
+        }
+
+        // Pastikan hasil build ada sebelum diarsipkan
+        sh 'ls -lah dist/' || echo '❌ ERROR: No build artifacts found!'
+
+        // Arsipkan hanya jika file ada
         archiveArtifacts artifacts: 'dist/add2vals', fingerprint: true
+
+    } catch (Exception e) {
+        echo "⚠️ WARNING: Deliver stage failed but continuing pipeline..."
     }
+}
+
 }

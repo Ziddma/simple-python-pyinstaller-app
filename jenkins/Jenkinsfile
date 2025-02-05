@@ -19,19 +19,22 @@ node {
     stage('Deliver') {
         echo 'Packaging the application...'
 
+        // Pastikan file tersedia sebelum eksekusi
+        sh 'ls -lah ${WORKSPACE}/sources'
+
         // Jalankan Docker secara langsung untuk memastikan volume mounting benar
         sh '''
         docker run --rm \
             -v ${WORKSPACE}/sources:/app \
             -w /app \
             cdrx/pyinstaller-linux:python2 \
-            pyinstaller --onefile add2vals.py
+            pyinstaller --onefile /app/add2vals.py --log-level=DEBUG
         '''
 
         // Pastikan file hasil build tersedia sebelum di-archive
-        sh 'ls -lah dist/'
+        sh 'ls -lah ${WORKSPACE}/sources/dist/'
 
         // Archive hasil build jika berhasil
-        archiveArtifacts artifacts: 'dist/add2vals', fingerprint: true
+        archiveArtifacts artifacts: 'sources/dist/add2vals', fingerprint: true
     }
 }

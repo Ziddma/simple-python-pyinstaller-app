@@ -17,28 +17,22 @@ node {
     }
 
     stage('Deliver') {
-    try {
-        docker.image('cdrx/pyinstaller-linux:python2').inside {
-            echo '📦 Packaging the application...'
-
-            // Cek apakah direktori sources ada
-            sh 'ls -lah sources/' || echo '❌ ERROR: Directory sources/ not found!'
-
-            // Cek apakah file ada sebelum pyinstaller dieksekusi
-            sh '[ -f sources/add2vals.py ] && echo "✅ File found" || echo "❌ ERROR: File missing!"'
-
-            // Jalankan PyInstaller hanya jika file ditemukan
-            sh 'if [ -f sources/add2vals.py ]; then pyinstaller --onefile sources/add2vals.py; else echo "❌ Skipping pyinstaller due to missing file"; fi'
+    node {
+        docker.image('cdrx/pyinstaller-linux:python2').inside('-v ${WORKSPACE}/sources:/app') {
+            echo 'Packaging the application...'
+            
+            // Cek apakah file ada di /app sebelum eksekusi PyInstaller
+            sh 'ls -lah /app'  
+            
+            // Tambahkan sleep untuk debugging jika file belum siap
+            sh 'sleep 3'
+            
+            // Jalankan PyInstaller
+            sh 'pyinstaller --onefile /app/add2vals.py'
         }
 
-        // Pastikan hasil build ada sebelum diarsipkan
-        sh 'ls -lah dist/' || echo '❌ ERROR: No build artifacts found!'
-
-        // Arsipkan hanya jika file ada
+        // Archive hasil build jika berhasil
         archiveArtifacts artifacts: 'dist/add2vals', fingerprint: true
-
-    } catch (Exception e) {
-        echo "⚠️ WARNING: Deliver stage failed but continuing pipeline..."
     }
 }
 

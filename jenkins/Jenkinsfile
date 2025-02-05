@@ -20,15 +20,16 @@ node {
         echo 'Packaging the application...'
 
         // Pastikan file tersedia sebelum eksekusi
+        sh 'chmod -R 777 sources/'
         sh 'ls -lah ${WORKSPACE}/sources'
 
         // Jalankan Docker secara langsung untuk memastikan volume mounting benar
         sh '''
         docker run --rm \
-            -v ${WORKSPACE}/sources:/app \
+            -v "${WORKSPACE}/sources:/app" \
             -w /app \
             cdrx/pyinstaller-linux:python2 \
-            pyinstaller --onefile /app/add2vals.py --log-level=DEBUG
+            pyinstaller --onefile "/app/add2vals.py" --log-level=DEBUG
         '''
 
         // Pastikan file hasil build tersedia sebelum di-archive

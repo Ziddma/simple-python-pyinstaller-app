@@ -17,25 +17,21 @@ node {
     }
 
     stage('Deliver') {
-    node {
-        docker.image('cdrx/pyinstaller-linux:python2').inside('-v ${WORKSPACE}/sources:/app') {
-            echo 'Packaging the application...'
-            
-            // Cek apakah file ada di /app sebelum eksekusi PyInstaller
-            sh 'ls -lah /app'  
-            
-            // Tambahkan sleep untuk debugging jika file belum siap
-            sh 'sleep 3'
-            
-            // Jalankan PyInstaller
-            sh 'pyinstaller --onefile /app/add2vals.py'
+        echo 'Packaging the application...'
 
-            sh 'tail -f /dev/null'
-        }
+        // Jalankan Docker secara langsung untuk memastikan volume mounting benar
+        sh '''
+        docker run --rm \
+            -v ${WORKSPACE}/sources:/app \
+            -w /app \
+            cdrx/pyinstaller-linux:python2 \
+            pyinstaller --onefile add2vals.py
+        '''
+
+        // Pastikan file hasil build tersedia sebelum di-archive
+        sh 'ls -lah dist/'
 
         // Archive hasil build jika berhasil
         archiveArtifacts artifacts: 'dist/add2vals', fingerprint: true
     }
-}
-
 }

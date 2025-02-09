@@ -15,6 +15,7 @@ node {
         }
     }
 
+    //test
     stage('Deliver') {
         docker.image('python:3.9').inside('--network=host -u root') {
             sh 'pip install --no-cache-dir pyinstaller'

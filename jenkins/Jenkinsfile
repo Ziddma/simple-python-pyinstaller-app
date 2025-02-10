@@ -16,12 +16,29 @@ node {
         }
     }
 
+    stage('Manual Approval') {
+        script {
+            def userInput = input(
+                message: 'Lanjutkan ke tahap Deploy?',
+                parameters: [
+                    choice(name: 'Approval', choices: ['Proceed', 'Abort'], description: 'Pilih apakah ingin melanjutkan atau tidak')
+                ]
+            )
+            if (userInput == 'Abort') {
+                error("Pipeline dihentikan oleh pengguna.")
+            }
+        }
+    }
+
     stage('Deploy') {
         docker.image('python:3.9').inside('--network=host -u root') {
             sh 'pip install --no-cache-dir pyinstaller'
             sh 'pyinstaller --onefile sources/add2vals.py'
         }
         archiveArtifacts 'dist/add2vals'
+        
+        
+        sh 'sleep 60'
     }
 
 }

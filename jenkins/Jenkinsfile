@@ -1,6 +1,6 @@
 node {
     stage('Checkout Code') {
-        git branch: 'main', url: 'https://github.com/Ziddma/simple-python-pyinstaller-app.git'
+        git branch: 'master', url: 'https://github.com/Ziddma/simple-python-pyinstaller-app.git'
     }
 
     stage('Build') {

@@ -1,4 +1,7 @@
 node {
+    stage('Checkout Code') {
+        git branch: 'main', url: 'https://github.com/Ziddma/simple-python-pyinstaller-app.git'
+    }
 
     stage('Build') {
         docker.image('python:3.9').inside {

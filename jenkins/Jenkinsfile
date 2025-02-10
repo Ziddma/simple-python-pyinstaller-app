@@ -2,7 +2,7 @@ node {
 
     stage('Build') {
         docker.image('python:3.9').inside {
-            sh 'python3 -m py_compile /home/simple-python-pyinstaller-app/sources/add2vals.py /home/simple-python-pyinstaller-app/sources/calc.py'
+            sh 'python3 -m py_compile ./sources/add2vals.py ./sources/calc.py'
         }
     }
 

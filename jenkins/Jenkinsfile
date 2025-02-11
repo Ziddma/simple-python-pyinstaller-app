@@ -21,15 +21,7 @@ node {
 
     stage('Manual Approval') {
         script {
-            def userInput = input(
-                message: 'Lanjutkan ke tahap Deploy?',
-                parameters: [
-                    choice(name: 'Approval', choices: ['Proceed', 'Abort'], description: 'Pilih apakah ingin melanjutkan atau tidak')
-                ]
-            )
-            if (userInput == 'Abort') {
-                error("Pipeline dihentikan oleh pengguna.")
-            }
+            input message: 'Melanjutkan tahap deploy? (Klik "Proceed" untuk menlanjutkan)' 
         }
     }
 
